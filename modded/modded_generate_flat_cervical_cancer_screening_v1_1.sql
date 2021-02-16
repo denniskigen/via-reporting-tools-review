@@ -29,9 +29,11 @@ BEGIN
         location_uuid VARCHAR(100),
         uuid VARCHAR(100),
         age INT,
+        -- Pre-Clinic Review
         reasons_for_current_visit TINYINT, -- 1834
         cur_visit_type INT, -- 1839
         actual_scheduled_visit_date DATETIME,
+        -- Reproductive Health (should there be a gender check?)
         gravida TINYINT,
         parity TINYINT,
         menstruation_status TINYINT,
@@ -39,14 +41,27 @@ BEGIN
         pregnancy_status TINYINT,
         estimated_delivery_date DATETIME,
         reason_not_pregnant TINYINT,
+        -- HIV Status
         hiv_status TINYINT,
+        -- Prior VIA
         prior_via_done TINYINT,
         prior_via_result TINYINT,
         prior_via_date DATETIME,
-        cur_via_result INT,
-        visual_impression_cervix INT,
-        visual_impression_vagina INT,
-        visual_impression_vulva INT,
+        -- Routine Screening
+        screening_method TINYINT,
+        -- If Routine Screening === VIA
+        via_test_result TINYINT,
+        observations_from_positive_via VARCHAR(100),
+        -- DELETE cur_via_result INT,
+        visual_impression_cervix TINYINT,
+        visual_impression_vagina TINYINT,
+        visual_impression_vulva TINYINT,
+        -- If Routine Screening === VILI
+        vili_test_result TINYINT,
+        -- If Routine Screening === HPV
+        hpv_test_result TINYINT,
+        
+        -- Procedures Done
         via_procedure_done INT,
         other_via_procedure_done VARCHAR(1000),
         via_management_plan INT,
