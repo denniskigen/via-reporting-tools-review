@@ -54,7 +54,6 @@ BEGIN
         -- If Routine Screening === VIA
         via_test_result TINYINT,
         observations_from_positive_via_test VARCHAR(200),
-        -- DELETE screening_method INT,
         visual_impression_cervix TINYINT,
         visual_impression_vagina TINYINT,
         visual_impression_vulva TINYINT,
@@ -65,10 +64,8 @@ BEGIN
         -- If Routine Screening === Pap Smear
         pap_smear_test_result TINYINT,    
         -- Procedures Done
-        -- DELETE screening_procedures_done INT,
         screening_procedures_done VARCHAR(200),
         other_screening_procedures_done VARCHAR(150),
-        -- DELETE other_screening_procedures_done VARCHAR(1000),
         -- Treatment Plan
         treatment_method TINYINT,
         status_of_leep TINYINT,
