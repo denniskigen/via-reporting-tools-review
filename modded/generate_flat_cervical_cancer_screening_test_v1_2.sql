@@ -1,6 +1,6 @@
-CREATE PROCEDURE `generate_flat_cervical_cancer_screening_v1_1`(IN query_type varchar(50), IN queue_number int, IN queue_size int, IN cycle_size int)
+CREATE DEFINER=`dkigen`@`%` PROCEDURE `generate_flat_cervical_cancer_screening_test2_v1_1`(IN query_type varchar(50), IN queue_number int, IN queue_size int, IN cycle_size int)
 BEGIN
-    SET @primary_table := "flat_cervical_cancer_screening";
+    SET @primary_table := "flat_cervical_cancer_screening_test2";
     SET @query_type := query_type;
     SET @total_rows_written := 0;
     
@@ -10,7 +10,7 @@ BEGIN
     SET @other_encounter_types := "(-1)";
                     
     SET @start := now();
-    SET @table_version := "flat_cervical_cancer_screening_v1.1";
+    SET @table_version := "flat_cervical_cancer_screening_test2";
 
     SET session sort_buffer_size := 512000000;
 
@@ -18,7 +18,7 @@ BEGIN
     SET @boundary := "!!";
     SET @last_date_created := (select max(max_date_created) from etl.flat_obs);
 
-    CREATE TABLE IF NOT EXISTS flat_cervical_cancer_screening (
+    CREATE TABLE IF NOT EXISTS flat_cervical_cancer_screening_test2 (
         date_created TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
         person_id INT,
         encounter_id INT,
@@ -113,7 +113,6 @@ BEGIN
         dysp_assessment_notes VARCHAR(500),
         -- Next appointment
         dysp_rtc_date DATETIME,
-
         -- -------------------------------
         -- GYN PATHOLOGY RESULTS FORM (enc type 147)
         -- Pap smear result
@@ -157,20 +156,20 @@ BEGIN
                         
   IF (@query_type = "build") THEN
 		select 'BUILDING..........................................';              												
-        SET @write_table := concat("flat_cervical_cancer_screening_temp_",queue_number);
-        SET @queue_table := concat("flat_cervical_cancer_screening_build_queue_", queue_number);                    												
+        SET @write_table := concat("flat_cervical_cancer_screening_test2_temp_",queue_number);
+        SET @queue_table := concat("flat_cervical_cancer_screening_test2_build_queue_", queue_number);                    												
 							
         SET @dyn_sql := CONCAT('create table if not exists ', @write_table,' like ', @primary_table);
         PREPARE s1 from @dyn_sql; 
         EXECUTE s1; 
         DEALLOCATE PREPARE s1;  
 
-        SET @dyn_sql := CONCAT('Create table if not exists ', @queue_table, ' (select * from flat_cervical_cancer_screening_build_queue limit ', queue_size, ');'); 
+        SET @dyn_sql := CONCAT('Create table if not exists ', @queue_table, ' (select * from flat_cervical_cancer_screening_test2_build_queue limit ', queue_size, ');'); 
         PREPARE s1 from @dyn_sql; 
         EXECUTE s1; 
         DEALLOCATE PREPARE s1;  
         
-        SET @dyn_sql := CONCAT('delete t1 from flat_cervical_cancer_screening_build_queue t1 join ', @queue_table, ' t2 using (person_id);'); 
+        SET @dyn_sql := CONCAT('delete t1 from flat_cervical_cancer_screening_test2_build_queue t1 join ', @queue_table, ' t2 using (person_id);'); 
         PREPARE s1 from @dyn_sql; 
         EXECUTE s1; 
         DEALLOCATE PREPARE s1;  
@@ -178,10 +177,10 @@ BEGIN
 	
     IF (@query_type = "sync") THEN
         select 'SYNCING..........................................';
-        SET @write_table := "flat_cervical_cancer_screening";
-        SET @queue_table := "flat_cervical_cancer_screening_sync_queue";
+        SET @write_table := "flat_cervical_cancer_screening_test2";
+        SET @queue_table := "flat_cervical_cancer_screening_test2_sync_queue";
 
-        CREATE TABLE IF NOT EXISTS flat_cervical_cancer_screening_sync_queue (
+        CREATE TABLE IF NOT EXISTS flat_cervical_cancer_screening_test2_sync_queue (
             person_id INT PRIMARY KEY
         );                            
                             
@@ -194,37 +193,37 @@ BEGIN
         WHERE
             table_name = @table_version;										
 
-        replace into flat_cervical_cancer_screening_sync_queue
+        replace into flat_cervical_cancer_screening_test2_sync_queue
         (select distinct patient_id
           from amrs.encounter
           where date_changed > @last_update
         );
 
-        replace into flat_cervical_cancer_screening_sync_queue
+        replace into flat_cervical_cancer_screening_test2_sync_queue
         (select distinct person_id
           from etl.flat_obs
           where max_date_created > @last_update
         );
 
-        replace into flat_cervical_cancer_screening_sync_queue
+        replace into flat_cervical_cancer_screening_test2_sync_queue
         (select distinct person_id
           from etl.flat_lab_obs
           where max_date_created > @last_update
         );
 
-        replace into flat_cervical_cancer_screening_sync_queue
+        replace into flat_cervical_cancer_screening_test2_sync_queue
         (select distinct person_id
           from etl.flat_orders
           where max_date_created > @last_update
         );
                       
-        replace into flat_cervical_cancer_screening_sync_queue
+        replace into flat_cervical_cancer_screening_test2_sync_queue
         (select person_id from 
           amrs.person 
           where date_voided > @last_update);
 
 
-        replace into flat_cervical_cancer_screening_sync_queue
+        replace into flat_cervical_cancer_screening_test2_sync_queue
         (select person_id from 
           amrs.person 
           where date_changed > @last_update);
@@ -257,16 +256,16 @@ BEGIN
     WHILE @person_ids_count > 0 DO
         SET @loop_start_time = now();
                         
-        drop temporary table if exists flat_cervical_cancer_screening_build_queue__0;
+        drop temporary table if exists flat_cervical_cancer_screening_test2_build_queue__0;
 						
-        SET @dyn_sql=CONCAT('create temporary table flat_cervical_cancer_screening_build_queue__0 (person_id int primary key) (select * from ',@queue_table,' limit ',cycle_size,');'); 
+        SET @dyn_sql=CONCAT('create temporary table flat_cervical_cancer_screening_test2_build_queue__0 (person_id int primary key) (select * from ',@queue_table,' limit ',cycle_size,');'); 
         PREPARE s1 from @dyn_sql; 
         EXECUTE s1; 
         DEALLOCATE PREPARE s1;  
                     
-        drop temporary table if exists flat_cervical_cancer_screening_0a;
+        drop temporary table if exists flat_cervical_cancer_screening_test2_0a;
         SET @dyn_sql = CONCAT(
-            'create temporary table flat_cervical_cancer_screening_0a
+            'create temporary table flat_cervical_cancer_screening_test2_0a
             (select
               t1.person_id,
               t1.visit_id,
@@ -288,7 +287,7 @@ BEGIN
               end as encounter_type_sort_index,
               t2.orders
             from etl.flat_obs t1
-              join flat_cervical_cancer_screening_build_queue__0 t0 using (person_id)
+              join flat_cervical_cancer_screening_test2_build_queue__0 t0 using (person_id)
               left join etl.flat_orders t2 using(encounter_id)
             where t1.encounter_type in ',@encounter_types,');'
           );
@@ -297,7 +296,7 @@ BEGIN
           EXECUTE s1; 
           DEALLOCATE PREPARE s1;  
   					
-          insert into flat_cervical_cancer_screening_0a
+          insert into flat_cervical_cancer_screening_test2_0a
           (select
               t1.person_id,
               null,
@@ -313,13 +312,13 @@ BEGIN
               1 as encounter_type_sort_index,
               null
               from etl.flat_lab_obs t1
-              join flat_cervical_cancer_screening_build_queue__0 t0 using (person_id)
+              join flat_cervical_cancer_screening_test2_build_queue__0 t0 using (person_id)
           );
 
 
-          drop temporary table if exists flat_cervical_cancer_screening_0;
-          create temporary table flat_cervical_cancer_screening_0(index encounter_id (encounter_id), index person_enc (person_id,encounter_datetime))
-          (select * from flat_cervical_cancer_screening_0a
+          drop temporary table if exists flat_cervical_cancer_screening_test2_0;
+          create temporary table flat_cervical_cancer_screening_test2_0(index encounter_id (encounter_id), index person_enc (person_id,encounter_datetime))
+          (select * from flat_cervical_cancer_screening_test2_0a
               order by person_id, date(encounter_datetime), encounter_type_sort_index
           );
 
@@ -398,8 +397,8 @@ BEGIN
           SET @gynp_assessment_notes := null;
           SET @gynp_rtc_date := null;
                                                 
-          drop temporary table if exists flat_cervical_cancer_screening_1;
-          create temporary table flat_cervical_cancer_screening_1 #(index encounter_id (encounter_id))
+          drop temporary table if exists flat_cervical_cancer_screening_test2_1;
+          create temporary table flat_cervical_cancer_screening_test2_1 #(index encounter_id (encounter_id))
           (select 
               obs,
               encounter_type_sort_index,
@@ -854,7 +853,7 @@ BEGIN
                 else @gynp_rtc_date := null
               end as gynp_rtc_date
 		
-						from flat_cervical_cancer_screening_0 t1
+						from flat_cervical_cancer_screening_test2_0 t1
 							join amrs.person p using (person_id)
 						order by person_id, date(encounter_datetime) desc, encounter_type_sort_index desc
 						);
@@ -874,10 +873,10 @@ BEGIN
 						SET @cur_clinical_location_id := null;
 
 
-						alter table flat_cervical_cancer_screening_1 drop prev_id, drop cur_id;
+						alter table flat_cervical_cancer_screening_test2_1 drop prev_id, drop cur_id;
 
-						drop table if exists flat_cervical_cancer_screening_2;
-						create temporary table flat_cervical_cancer_screening_2
+						drop table if exists flat_cervical_cancer_screening_test2_2;
+						create temporary table flat_cervical_cancer_screening_test2_2
 						(select *,
 							@prev_id := @cur_id as prev_id,
 							@cur_id := person_id as cur_id,
@@ -929,11 +928,11 @@ BEGIN
                   else @cur_clinical_rtc_date:= null
 							end as cur_clinical_rtc_date
 
-							from flat_cervical_cancer_screening_1
+							from flat_cervical_cancer_screening_test2_1
 							order by person_id, date(encounter_datetime) desc, encounter_type_sort_index desc
 						);
 
-						alter table flat_cervical_cancer_screening_2 drop prev_id, drop cur_id, drop cur_encounter_type, drop cur_encounter_datetime, drop cur_clinical_rtc_date;
+						alter table flat_cervical_cancer_screening_test2_2 drop prev_id, drop cur_id, drop cur_encounter_type, drop cur_encounter_datetime, drop cur_clinical_rtc_date;
 
 						SET @prev_id := null;
 						SET @cur_id := null;
@@ -946,8 +945,8 @@ BEGIN
             SET @prev_clinical_location_id := null;
 						SET @cur_clinical_location_id := null;
 
-						drop temporary table if exists flat_cervical_cancer_screening_3;
-						create temporary table flat_cervical_cancer_screening_3 (prev_encounter_datetime datetime, prev_encounter_type int, index person_enc (person_id, encounter_datetime desc))
+						drop temporary table if exists flat_cervical_cancer_screening_test2_3;
+						create temporary table flat_cervical_cancer_screening_test2_3 (prev_encounter_datetime datetime, prev_encounter_type int, index person_enc (person_id, encounter_datetime desc))
 						(select
 							*,
 							@prev_id := @cur_id as prev_id,
@@ -989,14 +988,14 @@ BEGIN
                   when @prev_id = @cur_id then @cur_clinical_rtc_date
                   else @cur_clinical_rtc_date:= null
 							end as cur_clinic_rtc_date
-							from flat_cervical_cancer_screening_2 t1
+							from flat_cervical_cancer_screening_test2_2 t1
 							order by person_id, date(encounter_datetime), encounter_type_sort_index
 						);
                                         
 					SELECT 
               COUNT(*)
           INTO @new_encounter_rows FROM
-              flat_cervical_cancer_screening_3;
+              flat_cervical_cancer_screening_test2_3;
                     
           SELECT @new_encounter_rows;                    
           SET @total_rows_written = @total_rows_written + @new_encounter_rows;
@@ -1057,7 +1056,6 @@ BEGIN
               dysp_past_biopsy_result_non_coded,
               dysp_past_treatment,
               dysp_past_treatment_specimen_pathology,
-              dysp_past_treatment_non-coded,
               dysp_satisfactory_colposcopy,
               dysp_colposcopy_findings,
               dysp_cervical_lesion_size,
@@ -1096,7 +1094,7 @@ BEGIN
               prev_clinical_rtc_date_cervical_cancer_screening,
               next_clinical_rtc_date_cervical_cancer_screening
 
-              from flat_cervical_cancer_screening_3 t1
+              from flat_cervical_cancer_screening_test2_3 t1
               join amrs.location t2 using (location_id))');       
 
 					PREPARE s1 from @dyn_sql; 
@@ -1104,7 +1102,7 @@ BEGIN
 					DEALLOCATE PREPARE s1;
 
 
-					SET @dyn_sql=CONCAT('delete t1 from ',@queue_table,' t1 join flat_cervical_cancer_screening_build_queue__0 t2 using (person_id);'); 
+					SET @dyn_sql=CONCAT('delete t1 from ',@queue_table,' t1 join flat_cervical_cancer_screening_test2_build_queue__0 t2 using (person_id);'); 
 					PREPARE s1 from @dyn_sql; 
           EXECUTE s1; 
 					DEALLOCATE PREPARE s1;  
