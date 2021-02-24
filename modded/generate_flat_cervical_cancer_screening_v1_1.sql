@@ -1050,7 +1050,6 @@ BEGIN
               dysp_past_biopsy_result_non_coded,
               dysp_past_treatment,
               dysp_past_treatment_specimen_pathology,
-              dysp_past_treatment_non-coded,
               dysp_satisfactory_colposcopy,
               dysp_colposcopy_findings,
               dysp_cervical_lesion_size,
