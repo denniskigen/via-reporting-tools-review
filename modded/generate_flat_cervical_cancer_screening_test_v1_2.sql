@@ -35,7 +35,7 @@ BEGIN
         cur_visit_type INT, -- 1839
         reasons_for_current_visit TINYINT, -- 1834
         actual_scheduled_visit_date DATETIME,
-        -- Reproductive Health (should there be a gender check?)
+        -- Reproductive Health
         gravida TINYINT,
         parity TINYINT,
         menstruation_status TINYINT,
@@ -51,23 +51,22 @@ BEGIN
         prior_via_date DATETIME,
         -- Routine Screening
         screening_method TINYINT,
-        -- If Routine Screening === VIA
-        via_test_result TINYINT,
-        observations_from_positive_via_test VARCHAR(200),
+        -- If screening_method === VIA or VIA/VILI
+        via_or_via_vili_test_result TINYINT,
+        observations_from_positive_via_or_via_vili_test VARCHAR(200),
         visual_impression_cervix TINYINT,
         visual_impression_vagina TINYINT,
         visual_impression_vulva TINYINT,
-        -- If Routine Screening === VILI
-        vili_test_result TINYINT,
-        -- If Routine Screening === HPV
+        -- If screening_method === HPV
         hpv_test_result TINYINT,
-        -- If Routine Screening === Pap Smear
+        hpv_type TINYINT,
+        -- If screening_method === Pap Smear
         pap_smear_test_result TINYINT,    
         -- Procedures Done
-        screening_procedures_done VARCHAR(200),
-        other_screening_procedures_done VARCHAR(150),
+        procedures_done_this_visit TINYINT,
         -- Treatment Plan
         treatment_method TINYINT,
+        other_treatment_method_non_coded VARCHAR(100),
         status_of_leep TINYINT,
         status_of_cryotherapy TINYINT,
         status_of_thermocoagulation TINYINT,
@@ -75,7 +74,6 @@ BEGIN
         screening_assessment_notes VARCHAR(500),
         -- Follow-up
         follow_up_plan TINYINT,
-        follow_up_plan_non_coded VARCHAR(150),
         -- Next Appointment
         screening_rtc_date DATETIME,
         -- -------------------------------
@@ -152,7 +150,7 @@ BEGIN
     );
                         
   IF (@query_type = "build") THEN
-		select 'BUILDING..........................................';              												
+  	select 'BUILDING..........................................';              												
         SET @write_table := concat("flat_cervical_cancer_screening_test2_temp_",queue_number);
         SET @queue_table := concat("flat_cervical_cancer_screening_test2_build_queue_", queue_number);                    												
 							
@@ -337,23 +335,22 @@ BEGIN
           SET @prior_via_result := null;
           SET @prior_via_date := null;
           SET @screening_method := null;
-          SET @via_test_result := null;
-          SET @observations_from_positive_via_test := null;
+          SET @via_or_via_vili_test_result := null;
+          SET @observations_from_positive_via_or_via_vili_test := null;
           SET @visual_impression_cervix := null;
           SET @visual_impression_vagina := null;
           SET @visual_impression_vulva := null;
-          SET @vili_test_result := null;
           SET @hpv_test_result := null;
+          SET @hpv_type := null;
           SET @pap_smear_test_result := null;
-          SET @screening_procedures_done := null;
-          SET @other_screening_procedures_done := null;
+          SET @procedures_done_this_visit := null;
           SET @treatment_method := null;
+          SET @other_treatment_method_non_coded := null;
           SET @status_of_leep := null;
           SET @status_of_cryotherapy := null;
           SET @status_of_thermocoagulation := null;
           SET @screening_assessment_notes := null;
           SET @follow_up_plan := null;
-          SET @follow_up_plan_non_coded := null;
           SET @screening_rtc_date := null;
           -- DYSPLASIA FORM (enc type 70)
           SET @dysp_visit_type := null;
@@ -423,7 +420,7 @@ BEGIN
               end as cur_visit_type,
               case
                  when t1.encounter_type = 69 and obs regexp "!!1834=7850!!" then @reasons_for_current_visit := 1 -- Initial screening
-                 when t1.encounter_type = 69 and obs regexp "!!1834=9651!!" then @reasons_for_current_visit := 2 -- Routine screening -- CONFIRM CONCEPT
+                 when t1.encounter_type = 69 and obs regexp "!!1834=9651!!" then @reasons_for_current_visit := 2 -- Routine screening
                  when t1.encounter_type = 69 and obs regexp "!!1834=11755!!" then @reasons_for_current_visit := 3 -- Post-Treatment screening
                  when t1.encounter_type = 69 and obs regexp "!!1834=1185!!" then @reasons_for_current_visit := 4 -- Treatment visit
                  when t1.encounter_type = 69 and obs regexp "!!1834=11758!!" then @reasons_for_current_visit := 5 -- Complications
@@ -494,15 +491,15 @@ BEGIN
                  else @screening_method := null
             end as screening_method,
             case 
-                when t1.encounter_type = 69 and obs regexp "!!9434=664!!" then @via_test_result := 1 -- Negative
-                when t1.encounter_type = 69 and obs regexp "!!9434=703!!" then @via_test_result := 2 -- Positive
-                when t1.encounter_type = 69 and obs regexp "!!9434=6971!!" then @via_test_result := 3 -- Suspicious of cancer
-                else @via_test_result := null
-            end as via_test_result,
+                when t1.encounter_type = 69 and obs regexp "!!9434=664!!" then @via_or_via_vili_test_result := 1 -- Negative
+                when t1.encounter_type = 69 and obs regexp "!!9434=703!!" then @via_or_via_vili_test_result := 2 -- Positive
+                when t1.encounter_type = 69 and obs regexp "!!9434=6971!!" then @via_or_via_vili_test_result := 3 -- Suspicious of cancer
+                else @via_or_via_vili_test_result := null
+            end as via_or_via_vili_test_result,
             case
-              when t1.encounter_type = 69 and obs regexp "!!9590=" then @observations_from_positive_via_test := GetValues(obs, 9590)
-              else @observations_from_positive_via_test := null
-            end as observations_from_positive_via_test,
+              when t1.encounter_type = 69 and obs regexp "!!9590=" then @observations_from_positive_via_or_via_vili_test := GetValues(obs, 9590)
+              else @observations_from_positive_via_or_via_vili_test := null
+            end as observations_from_positive_via_or_via_vili_test,
             case
                  when t1.encounter_type = 69 and obs regexp "!!7484=1115!!" then @visual_impression_cervix := 1 -- Normal
                  when t1.encounter_type = 69 and obs regexp "!!7484=7507!!" then @visual_impression_cervix := 2 -- Positive VIA with Aceto white area
@@ -521,40 +518,46 @@ BEGIN
                  when t1.encounter_type = 69 and obs regexp "!!7490=9177!!" then @visual_impression_vulva := 3 -- Suspicious of cancer, vulval lesion
                   else @visual_impression_vulva := null
               end as visual_impression_vulva,
-                          case 
-                when t1.encounter_type = 69 and obs regexp "!!10420=664!!" then @vili_test_result := 1 -- Negative
-                when t1.encounter_type = 69 and obs regexp "!!10420=703!!" then @vili_test_result := 2 -- Positive
-                when t1.encounter_type = 69 and obs regexp "!!10420=6971!!" then @vili_test_result := 3 -- Suspicious of cancer
-                else @vili_test_result := null
-            end as vili_test_result,
                         case 
                 when t1.encounter_type = 69 and obs regexp "!!9434=664!!" then @hpv_test_result := 1 -- Negative
                 when t1.encounter_type = 69 and obs regexp "!!9434=703!!" then @hpv_test_result := 2 -- Positive
-                when t1.encounter_type = 69 and obs regexp "!!9434=1138!!" then @hpv_test_result := 3 -- Indeterminate
+                when t1.encounter_type = 69 and obs regexp "!!9434=1138!!" then @hpv_test_result := 3 -- Indeterminate -> Unknown (different label)
                 else @hpv_test_result := null
             end as hpv_test_result,
+            case
+              when t1.encounter_type = 69 and obs regexp "!!11776=11773!!" then @hpv_type := 1 -- HPV TYPE 16
+              when t1.encounter_type = 69 and obs regexp "!!11776=11774!!" then @hpv_type := 2 -- HPV TYPE 18
+              when t1.encounter_type = 69 and obs regexp "!!11776=11775!!" then @hpv_type := 3 -- HPV TYPE 45
+              else @hpv_type := null
+            end as hpv_type,
                         case 
-                when t1.encounter_type = 69 and obs regexp "!!9434=664!!" then @pap_smear_test_result := 1 -- Negative
-                when t1.encounter_type = 69 and obs regexp "!!9434=703!!" then @pap_smear_test_result := 2 -- Positive
-                when t1.encounter_type = 69 and obs regexp "!!9434=6971!!" then @pap_smear_test_result := 3 -- Suspicious of cancer
+                when t1.encounter_type = 69 and obs regexp "!!7423=1115!!" then @pap_smear_test_result := 1 -- Normal
+                when t1.encounter_type = 69 and obs regexp "!!7423=7417!!" then @pap_smear_test_result := 2 -- ASCUS / ASC-H
+                when t1.encounter_type = 69 and obs regexp "!!7423=7419!!" then @pap_smear_test_result := 3 -- LSIL
+                when t1.encounter_type = 69 and obs regexp "!!7423=7420!!" then @pap_smear_test_result := 4 -- HSIL/CIS
+                when t1.encounter_type = 69 and obs regexp "!!7423=7418!!" then @pap_smear_test_result := 5 -- AGUS
+                when t1.encounter_type = 69 and obs regexp "!!7423=10055!!" then @pap_smear_test_result := 6 -- Invasive cancer
                 else @pap_smear_test_result := null
             end as pap_smear_test_result,
               case
-                 when t1.encounter_type = 69 and obs regexp "!!7479=" then @screening_procedures_done := GetValues(obs, 7479)
-                else @screening_procedures_done := null
-              end as screening_procedures_done,
-              case
-                 when t1.encounter_type = 69 and obs regexp "!!1915=" then @other_screening_procedures_done := GetValues(obs, 1915)
-                  else @other_screening_procedures_done := null
-              end as other_screening_procedures_done,
+                 when t1.encounter_type = 69 and obs regexp "!!7479=1107!!" then @procedures_done_this_visit := 1 -- None
+                 when t1.encounter_type = 69 and obs regexp "!!7479=11769!!" then @procedures_done_this_visit := 2 -- Endometrial biopsy
+                 when t1.encounter_type = 69 and obs regexp "!!7479=10202!!" then @procedures_done_this_visit := 3 -- Punch biopsy
+                 when t1.encounter_type = 69 and obs regexp "!!7479=9724!!" then @procedures_done_this_visit := 4 -- Polypectomy
+                else @procedures_done_this_visit := null
+              end as procedures_done_this_visit,
               case
                 when t1.encounter_type = 69 and obs regexp "!!10380=1107!!" then @treatment_method := 1 -- None  
                 when t1.encounter_type = 69 and obs regexp "!!10380=7466!!" then @treatment_method := 2 -- Cryotherapy
                 when t1.encounter_type = 69 and obs regexp "!!10380=7147!!" then @treatment_method := 3 -- LEEP 
                 when t1.encounter_type = 69 and obs regexp "!!10380=11757!!" then @treatment_method := 4 -- Thermocoagulation
-                when t1.encounter_type = 69 and obs regexp "!!10380=5276!!" then @treatment_method := 5 -- Hysterectomy
+                when t1.encounter_type = 69 and obs regexp "!!10380=1667!!" then @treatment_method := 5 -- Other treatment methods
                 else @treatment_method := null
               end as treatment_method,
+              case
+                when t1.encounter_type = 69 and obs regexp "!!10039=" then @other_treatment_method_non_coded := GetValues(obs, 10039)
+                else @other_treatment_method_non_coded := null
+              end as other_treatment_method_non_coded,
               case
                 when t1.encounter_type = 69 and obs regexp "!!11761=10756!!" then @status_of_cryotherapy := 1 -- Done
                 when t1.encounter_type = 69 and obs regexp "!!11761=11760!!" then @status_of_cryotherapy := 2 -- Single Visit Approach
@@ -586,13 +589,8 @@ BEGIN
                  when t1.encounter_type = 69 and obs regexp "!!7500=7497!!" then @follow_up_plan := 4 -- Routine 3 year VIA
                  when t1.encounter_type = 69 and obs regexp "!!7500=7383!!" then @follow_up_plan := 5 -- Colposcopy planned
                  when t1.encounter_type = 69 and obs regexp "!!7500=7499!!" then @follow_up_plan := 6 -- Gynecologic oncology services
-                 when t1.encounter_type = 69 and obs regexp "!!7500=5622!!" then @follow_up_plan := 7 -- Other (non-coded)
                 else @follow_up_plan := null
               end as follow_up_plan,
-              case
-                 when t1.encounter_type = 69 and obs regexp "!!1915=" then @follow_up_plan_non_coded := GetValues(obs, 1915)
-                  else @follow_up_plan_non_coded := null
-              end as follow_up_plan_non_coded,
               case
                  when t1.encounter_type = 69 and obs regexp "!!5096=" then @screening_rtc_date := GetValues(obs, 5096)
                   else @screening_rtc_date := null
@@ -849,7 +847,7 @@ BEGIN
                 when t1.encounter_type = 147 and obs regexp "!!5096=" then @gynp_rtc_date := GetValues(obs, 5096)
                 else @gynp_rtc_date := null
               end as gynp_rtc_date
-		
+              
 						from flat_cervical_cancer_screening_test2_0 t1
 							join amrs.person p using (person_id)
 						order by person_id, date(encounter_datetime) desc, encounter_type_sort_index desc
@@ -1025,23 +1023,22 @@ BEGIN
               prior_via_result,
               prior_via_date,
               screening_method,
-              via_test_result,
-              observations_from_positive_via_test,
+              via_or_via_vili_test_result,
+              observations_from_positive_via_or_via_vili_test,
               visual_impression_cervix,
               visual_impression_vagina,
               visual_impression_vulva,
-              vili_test_result,
               hpv_test_result,
+              hpv_type,
               pap_smear_test_result,
-              screening_procedures_done,
-              other_screening_procedures_done,
+              procedures_done_this_visit,
               treatment_method,
+              other_treatment_method_non_coded,
               status_of_leep,
               status_of_cryotherapy,
               status_of_thermocoagulation,
               screening_assessment_notes,
               follow_up_plan,
-              follow_up_plan_non_coded,
               screening_rtc_date,        
               dysp_visit_type,
               dysp_history,
@@ -1053,6 +1050,7 @@ BEGIN
               dysp_past_biopsy_result_non_coded,
               dysp_past_treatment,
               dysp_past_treatment_specimen_pathology,
+              dysp_past_treatment_non-coded,
               dysp_satisfactory_colposcopy,
               dysp_colposcopy_findings,
               dysp_cervical_lesion_size,
