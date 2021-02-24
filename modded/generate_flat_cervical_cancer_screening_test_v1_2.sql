@@ -67,9 +67,9 @@ BEGIN
         -- Treatment Plan
         treatment_method TINYINT,
         other_treatment_method_non_coded VARCHAR(100),
-        status_of_leep TINYINT,
-        status_of_cryotherapy TINYINT,
-        status_of_thermocoagulation TINYINT,
+        leep_status TINYINT,
+        cryotherapy_status TINYINT,
+        thermocoagulation_status TINYINT,
         -- Assessment
         screening_assessment_notes VARCHAR(500),
         -- Follow-up
@@ -346,9 +346,9 @@ BEGIN
           SET @procedures_done_this_visit := null;
           SET @treatment_method := null;
           SET @other_treatment_method_non_coded := null;
-          SET @status_of_leep := null;
-          SET @status_of_cryotherapy := null;
-          SET @status_of_thermocoagulation := null;
+          SET @leep_status := null;
+          SET @cryotherapy_status := null;
+          SET @thermocoagulation_status := null;
           SET @screening_assessment_notes := null;
           SET @follow_up_plan := null;
           SET @screening_rtc_date := null;
@@ -559,25 +559,25 @@ BEGIN
                 else @other_treatment_method_non_coded := null
               end as other_treatment_method_non_coded,
               case
-                when t1.encounter_type = 69 and obs regexp "!!11761=10756!!" then @status_of_cryotherapy := 1 -- Done
-                when t1.encounter_type = 69 and obs regexp "!!11761=11760!!" then @status_of_cryotherapy := 2 -- Single Visit Approach
-                when t1.encounter_type = 69 and obs regexp "!!11761=11759!!" then @status_of_cryotherapy := 3 -- Postponed
-                when t1.encounter_type = 69 and obs regexp "!!11761=10115!!" then @status_of_cryotherapy := 4 -- Referred
-                else @status_of_cryotherapy := null
-              end as status_of_cryotherapy,
+                when t1.encounter_type = 69 and obs regexp "!!11761=10756!!" then @cryotherapy_status := 1 -- Done
+                when t1.encounter_type = 69 and obs regexp "!!11761=11760!!" then @cryotherapy_status := 2 -- Single Visit Approach
+                when t1.encounter_type = 69 and obs regexp "!!11761=11759!!" then @cryotherapy_status := 3 -- Postponed
+                when t1.encounter_type = 69 and obs regexp "!!11761=10115!!" then @cryotherapy_status := 4 -- Referred
+                else @cryotherapy_status := null
+              end as cryotherapy_status,
               case
-                when t1.encounter_type = 69 and obs regexp "!!11762=11760!!" then @status_of_leep := 1 -- Single Visit Approach
-                when t1.encounter_type = 69 and obs regexp "!!11762=11759!!" then @status_of_leep := 2 -- Postponed
-                when t1.encounter_type = 69 and obs regexp "!!11762=10115!!" then @status_of_leep := 3 -- Referred
-                else @status_of_leep := null
-              end as status_of_leep,
+                when t1.encounter_type = 69 and obs regexp "!!11762=11760!!" then @leep_status := 1 -- Single Visit Approach
+                when t1.encounter_type = 69 and obs regexp "!!11762=11759!!" then @leep_status := 2 -- Postponed
+                when t1.encounter_type = 69 and obs regexp "!!11762=10115!!" then @leep_status := 3 -- Referred
+                else @leep_status := null
+              end as leep_status,
               case 
-                when t1.encounter_type = 69 and obs regexp "!!11763=10756!!" then @status_of_thermocoagulation := 1 -- Done  
-                when t1.encounter_type = 69 and obs regexp "!!11763=11760!!" then @status_of_thermocoagulation := 2 -- Single Visit Approach
-                when t1.encounter_type = 69 and obs regexp "!!11763=11759!!" then @status_of_thermocoagulation := 3 -- Postponed
-                when t1.encounter_type = 69 and obs regexp "!!11763=10115!!" then @status_of_thermocoagulation := 4 -- Referred
-                else @status_of_thermocoagulation := null
-              end as status_of_thermocoagulation,
+                when t1.encounter_type = 69 and obs regexp "!!11763=10756!!" then @thermocoagulation_status := 1 -- Done  
+                when t1.encounter_type = 69 and obs regexp "!!11763=11760!!" then @thermocoagulation_status := 2 -- Single Visit Approach
+                when t1.encounter_type = 69 and obs regexp "!!11763=11759!!" then @thermocoagulation_status := 3 -- Postponed
+                when t1.encounter_type = 69 and obs regexp "!!11763=10115!!" then @thermocoagulation_status := 4 -- Referred
+                else @thermocoagulation_status := null
+              end as thermocoagulation_status,
               case
                 when t1.encounter_type = 69 and obs regexp "!!7222=" then @screening_assessment_notes := GetValues(obs, 7222)
                 else @screening_assessment_notes := null
@@ -1034,9 +1034,9 @@ BEGIN
               procedures_done_this_visit,
               treatment_method,
               other_treatment_method_non_coded,
-              status_of_leep,
-              status_of_cryotherapy,
-              status_of_thermocoagulation,
+              leep_status,
+              cryotherapy_status,
+              thermocoagulation_status,
               screening_assessment_notes,
               follow_up_plan,
               screening_rtc_date,        
