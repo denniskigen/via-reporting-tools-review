@@ -518,7 +518,7 @@ BEGIN
                   when obs regexp "!!7500=7478!!" then @via_management_plan := 13 -- Endocervical curettage    
                   when obs regexp "!!7500=6511!!" then @via_management_plan := 14 -- Excisional/Surgical biopsy                 
                   when obs regexp "!!7500=5276!!" then @via_management_plan := 15 -- Female sterilization             
-                  when obs regexp "!!7500=10200!!" then @via_management_plan := 16 --  Repeat procedure           
+                  when obs regexp "!!7500=10200!!" then @via_management_plan := 16 -- Repeat procedure           
                   when obs regexp "!!7500=5622!!" then @via_management_plan := 17 -- Other (non-coded)
                   else @via_management_plan := null
               end as via_management_plan, 

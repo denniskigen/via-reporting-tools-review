@@ -320,8 +320,8 @@ BEGIN
           SET @prev_id := null;
           SET @cur_id := null;
           -- CERVICAL CANCER SCREENING FORM (enc type 69)
-          SET @reasons_for_current_visit := null;
           SET @cur_visit_type := null;
+          SET @reasons_for_current_visit := null;
           SET @actual_scheduled_visit_date := null;
           SET @gravida := null;
           SET @parity := null;
@@ -597,9 +597,9 @@ BEGIN
               end as screening_rtc_date,
               case
                  when t1.encounter_type = 70 and obs regexp "!!1839=1911!!" then @dysp_visit_type := 1 -- New visit
-                 when t1.encounter_type = 69 and obs regexp "!!1839=1246!!" then @dysp_visit_type := 1 -- Scheduled visit
-                 when t1.encounter_type = 69 and obs regexp "!!1839=1837!!" then @dysp_visit_type := 2 -- Unscheduled visit early
-                 when t1.encounter_type = 69 and obs regexp "!!1839=1838!!" then @dysp_visit_type := 3 -- Unscheduled visit late
+                 when t1.encounter_type = 70 and obs regexp "!!1839=1246!!" then @dysp_visit_type := 1 -- Scheduled visit
+                 when t1.encounter_type = 70 and obs regexp "!!1839=1837!!" then @dysp_visit_type := 2 -- Unscheduled visit early
+                 when t1.encounter_type = 70 and obs regexp "!!1839=1838!!" then @dysp_visit_type := 3 -- Unscheduled visit late
                 else @dysp_visit_type := null
               end as dysp_visit_type,
               case
@@ -665,8 +665,8 @@ BEGIN
                  when t1.encounter_type = 70 and obs regexp "!!7484=1115!!" then @dysp_visual_impression_cervix := 1 -- Normal
                  when t1.encounter_type = 70 and obs regexp "!!7484=7424!!" then @dysp_visual_impression_cervix := 2 -- CIN 1
                  when t1.encounter_type = 70 and obs regexp "!!7484=7425!!" then @dysp_visual_impression_cervix := 3 -- CIN 2
-                 when t1.encounter_type = 70 and obs regexp "!!7484=7216!!" then @dysp_visual_impression_cervix := 3 -- CIN 3
-                 when t1.encounter_type = 70 and obs regexp "!!7484=7421!!" then @dysp_visual_impression_cervix := 3 -- Carcinoma
+                 when t1.encounter_type = 70 and obs regexp "!!7484=7216!!" then @dysp_visual_impression_cervix := 4 -- CIN 3
+                 when t1.encounter_type = 70 and obs regexp "!!7484=7421!!" then @dysp_visual_impression_cervix := 5 -- Carcinoma
                   else @dysp_visual_impression_cervix := null
               end as dysp_visual_impression_cervix,
               case
@@ -1008,8 +1008,8 @@ BEGIN
               t2.uuid as location_uuid,
               uuid,
               age,
-              reasons_for_current_visit,
               cur_visit_type,
+              reasons_for_current_visit,
               actual_scheduled_visit_date,
               gravida,
               parity,

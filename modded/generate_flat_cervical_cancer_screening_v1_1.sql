@@ -597,9 +597,9 @@ BEGIN
               end as screening_rtc_date,
               case
                  when t1.encounter_type = 70 and obs regexp "!!1839=1911!!" then @dysp_visit_type := 1 -- New visit
-                 when t1.encounter_type = 69 and obs regexp "!!1839=1246!!" then @dysp_visit_type := 1 -- Scheduled visit
-                 when t1.encounter_type = 69 and obs regexp "!!1839=1837!!" then @dysp_visit_type := 2 -- Unscheduled visit early
-                 when t1.encounter_type = 69 and obs regexp "!!1839=1838!!" then @dysp_visit_type := 3 -- Unscheduled visit late
+                 when t1.encounter_type = 70 and obs regexp "!!1839=1246!!" then @dysp_visit_type := 1 -- Scheduled visit
+                 when t1.encounter_type = 70 and obs regexp "!!1839=1837!!" then @dysp_visit_type := 2 -- Unscheduled visit early
+                 when t1.encounter_type = 70 and obs regexp "!!1839=1838!!" then @dysp_visit_type := 3 -- Unscheduled visit late
                 else @dysp_visit_type := null
               end as dysp_visit_type,
               case
@@ -665,8 +665,8 @@ BEGIN
                  when t1.encounter_type = 70 and obs regexp "!!7484=1115!!" then @dysp_visual_impression_cervix := 1 -- Normal
                  when t1.encounter_type = 70 and obs regexp "!!7484=7424!!" then @dysp_visual_impression_cervix := 2 -- CIN 1
                  when t1.encounter_type = 70 and obs regexp "!!7484=7425!!" then @dysp_visual_impression_cervix := 3 -- CIN 2
-                 when t1.encounter_type = 70 and obs regexp "!!7484=7216!!" then @dysp_visual_impression_cervix := 3 -- CIN 3
-                 when t1.encounter_type = 70 and obs regexp "!!7484=7421!!" then @dysp_visual_impression_cervix := 3 -- Carcinoma
+                 when t1.encounter_type = 70 and obs regexp "!!7484=7216!!" then @dysp_visual_impression_cervix := 4 -- CIN 3
+                 when t1.encounter_type = 70 and obs regexp "!!7484=7421!!" then @dysp_visual_impression_cervix := 5 -- Carcinoma
                   else @dysp_visual_impression_cervix := null
               end as dysp_visual_impression_cervix,
               case
@@ -686,10 +686,10 @@ BEGIN
                 else @dysp_procedure_done := null
               end as dysp_procedure_done,
               -- FREETEXT FIELD (Problematic!)
-            --   case
-            --       when t1.encounter_type = 70 and obs regexp "!!1915=" then @other_dysplasia_procedure_done_non_coded := GetValues(obs, 1915)
-            --       else @other_dysplasia_procedure_done_non_coded := null
-            --   end as other_dysplasia_procedure_done_non_coded,
+              --   case
+              --       when t1.encounter_type = 70 and obs regexp "!!1915=" then @other_dysplasia_procedure_done_non_coded := GetValues(obs, 1915)
+              --       else @other_dysplasia_procedure_done_non_coded := null
+              --   end as other_dysplasia_procedure_done_non_coded,
               case
                   when t1.encounter_type = 70 and obs regexp "!!7500=" then @dysp_management_plan := GetValues(obs, 7500)
                   else @dysp_management_plan := null
@@ -710,7 +710,7 @@ BEGIN
                 when t1.encounter_type = 147 and obs regexp "!!7423=7418!!" then @gynp_pap_smear_results := 3 -- AGUS
                 when t1.encounter_type = 147 and obs regexp "!!7423=7419!!" then @gynp_pap_smear_results := 4 -- LSIL
                 when t1.encounter_type = 147 and obs regexp "!!7423=7420!!" then @gynp_pap_smear_results := 5 -- HSIL
-                when t1.encounter_type = 147 and obs regexp "!!7423=7422!!" then @gynp_pap_smear_results := 6-- Carcinoma
+                when t1.encounter_type = 147 and obs regexp "!!7423=7422!!" then @gynp_pap_smear_results := 6 -- Carcinoma
                 else @gynp_pap_smear_results := null
               end as gynp_pap_smear_results,
               case 
