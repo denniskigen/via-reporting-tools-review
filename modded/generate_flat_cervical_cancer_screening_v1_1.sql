@@ -50,18 +50,18 @@ BEGIN
         prior_via_result TINYINT,
         prior_via_date DATETIME,
         -- Routine Screening
-        screening_method TINYINT,
-        -- If screening_method === VIA or VIA/VILI
+        screening_method VARCHAR(150),
+        -- If screening_method contains VIA or VIA/VILI
         via_or_via_vili_test_result TINYINT,
         observations_from_positive_via_or_via_vili_test VARCHAR(200),
         visual_impression_cervix TINYINT,
         visual_impression_vagina TINYINT,
         visual_impression_vulva TINYINT,
-        -- If screening_method === HPV
+        -- If screening_method contains HPV
         hpv_test_result TINYINT,
         hpv_type TINYINT,
-        -- If screening_method === Pap Smear
-        pap_smear_test_result TINYINT,     
+        -- If screening_method contains Pap Smear
+        pap_smear_test_result TINYINT,         
         -- Procedures Done
         procedures_done_this_visit TINYINT,
         -- Treatment Plan
@@ -480,9 +480,9 @@ BEGIN
                   else @prior_via_result := null
               end as prior_via_result,
               case
-                  when t1.encounter_type = 69 and obs regexp "!!7381=" then @prior_via_date := GetValues(obs_datetimes, 7381) -- Could be buggy!
-                  else @prior_via_date := null
-              end as prior_via_date,
+                 when t1.encounter_type := 69 and obs regexp "!!10402=" then @screening_method := GetValues(obs, 10402)
+                 else @screening_method := null
+              end as screening_method,
               case
                  when t1.encounter_type = 69 and obs regexp "!!10402=9434!!" then @screening_method := 1 -- VIA
                  when t1.encounter_type = 69 and obs regexp "!!10402=10420!!" then @screening_method := 2 -- VILI
